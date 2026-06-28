@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using StockFlow.Domain.Entities;
 using StockFlow.Infrastructure.Data;
 
@@ -14,6 +15,21 @@ builder.Services.AddEndpointsApiExplorer();
 
 
 builder.Services
+
+
+// REGISTER DB FIRST
+.AddDbContext<StockFlowContext>(
+options =>
+{
+    options.UseSqlServer(
+        builder.Configuration
+        .GetConnectionString(
+            "DefaultConnection"));
+});
+
+// THEN IDENTITY
+builder.Services
+
 
 .AddIdentity<AppUser, IdentityRole<Guid>>(
     p =>
