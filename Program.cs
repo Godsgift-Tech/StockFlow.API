@@ -1,7 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StockFlow.Application.Features.Interfaces.Repositories;
+using StockFlow.Application.Features.Interfaces.UnitOfWork;
 using StockFlow.Domain.Entities;
 using StockFlow.Infrastructure.Data;
+using StockFlow.Infrastructure.Repository;
+using StockFlow.Infrastructure.SeedRole;
+using StockFlow.Infrastructure.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,11 +18,8 @@ builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
 
-
+// REGISTER DB 
 builder.Services
-
-
-// REGISTER DB FIRST
 .AddDbContext<StockFlowContext>(
 options =>
 {
@@ -26,11 +28,14 @@ options =>
         .GetConnectionString(
             "DefaultConnection"));
 });
+//REGISTER UNIT OF WORK
+builder.Services.AddScoped<IUnitOfWork, UnitOfWorks>();
+// REGISTER REPOSITORIES
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
-// THEN IDENTITY
+
+// REGISTERING IDENTITY
 builder.Services
-
-
 .AddIdentity<AppUser, IdentityRole<Guid>>(
     p =>
     {
@@ -49,6 +54,18 @@ StockFlowContext>()
 
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager =
+        scope.ServiceProvider
+        .GetRequiredService<
+            RoleManager<
+                IdentityRole<Guid>>>();
+
+    await RoleSeeder
+        .SeedAsync(
+            roleManager);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
