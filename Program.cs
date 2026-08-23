@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using StockFlow.Application.Features.AppCategory.Command.CreateCommand;
+using StockFlow.Application.Features.Common.AutoMapping;
 using StockFlow.Application.Features.Interfaces.Repositories;
 using StockFlow.Application.Features.Interfaces.UnitOfWork;
 using StockFlow.Domain.Entities;
@@ -30,9 +33,22 @@ options =>
 });
 //REGISTER UNIT OF WORK
 builder.Services.AddScoped<IUnitOfWork, UnitOfWorks>();
+
+// AUTOMAPPER
+// =========================
+builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+// registring MediatR   
+builder.Services.AddMediatR(
+    cfg => cfg.RegisterServicesFromAssembly(
+        typeof(CreateCategoryHandler).Assembly));
+
+
 // REGISTER REPOSITORIES
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IStockMovementRepository, StockMovementRepository>();
+builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 
 // REGISTERING IDENTITY
 builder.Services
