@@ -1,7 +1,11 @@
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StockFlow.API.Middleware;
 using StockFlow.Application.Features.AppCategory.Command.CreateCommand;
 using StockFlow.Application.Features.Common.AutoMapping;
+using StockFlow.Application.Features.Common.Behaviours;
 using StockFlow.Application.Features.Interfaces.Repositories;
 using StockFlow.Application.Features.Interfaces.UnitOfWork;
 using StockFlow.Domain.Entities;
@@ -45,9 +49,19 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWorks>();
 // =========================
 builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 // registring MediatR   
+//builder.Services.AddMediatR(
+//    cfg => cfg.RegisterServicesFromAssembly(
+//        typeof(CreateCategoryHandler).Assembly));
+
 builder.Services.AddMediatR(
     cfg => cfg.RegisterServicesFromAssembly(
         typeof(CreateCategoryHandler).Assembly));
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryCommandValidator>();
+
+builder.Services.AddTransient(
+    typeof(IPipelineBehavior<,>),
+    typeof(ValidationBehavior<,>));
 
 
 // REGISTER REPOSITORIES
@@ -90,6 +104,7 @@ using (var scope = app.Services.CreateScope())
             roleManager);
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

@@ -7,6 +7,7 @@ using StockFlow.Application.Features.AppCategory.Command.UpdateCommand;
 using StockFlow.Application.Features.AppCategory.DTO;
 using StockFlow.Application.Features.AppCategory.Queries.GetAllCategoies;
 using StockFlow.Application.Features.AppCategory.Queries.GetCategoryById;
+using StockFlow.Application.Features.AppCategory.Queries.GetCategoryByName;
 
 namespace StockFlow.API.Controllers
 {
@@ -73,6 +74,21 @@ namespace StockFlow.API.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var query = new GetCategoryByIdQuery(id);
+
+            var response = await _mediator.Send(query);
+
+            if (!response.Success)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpGet("name")]
+        public async Task<IActionResult> GetByName(string name)
+        {
+            var query = new GetCategoryByNameQuery(name);
 
             var response = await _mediator.Send(query);
 
